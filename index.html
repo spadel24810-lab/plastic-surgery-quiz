@@ -63,11 +63,11 @@ function App(){
   useEffect(()=>{LS.set('streak',streak);},[streak]);
   useEffect(()=>{LS.set('mastered',mastered);},[mastered]);
 
-  const PART_MAP={'Part I':'åºç¤åå','Part II':'ç ç©¶/çµ±è¨','Part III':'é¡±é¡','Part IV':'é ­é ¸/é¡é¢','Part V':'ä¹³æ¿','Part VI':'æ/ä¸è¢','Part VII':'ä¸è¢/è»å¹¹','Part VIII':'ç®è/çå·','Part IX':'ç¾å®¹'};
-  const extractPart=sr=>{if(!sr)return'å¶ä»';const m=sr.match(/Part\s+([IVX]+)/);return m?`Part ${m[1]}`:'å¶ä»';};
-  const getCategory=q=>{if(q.yr==='æç§æ¸')return q.bk||'å¶ä»';const p=extractPart(q.sr);return PART_MAP[p]||p;};
+  const PART_MAP={'Part I':'基礎原則','Part II':'研究/統計','Part III':'顱顏','Part IV':'頭頸/顏面','Part V':'乳房','Part VI':'手/上肢','Part VII':'下肢/軀幹','Part VIII':'皮膚/燒傷','Part IX':'美容'};
+  const extractPart=sr=>{if(!sr)return'其他';const m=sr.match(/Part\s+([IVX]+)/);return m?`Part ${m[1]}`:'其他';};
+  const getCategory=q=>{if(q.yr==='教科書')return q.bk||'其他';const p=extractPart(q.sr);return PART_MAP[p]||p;};
 
-  const yrs=useMemo(()=>[...new Set(QD.map(q=>q.yr))].sort((a,b)=>a==='æç§æ¸'?1:b==='æç§æ¸'?-1:a.localeCompare(b)),[]);
+  const yrs=useMemo(()=>[...new Set(QD.map(q=>q.yr))].sort((a,b)=>a==='教科書'?1:b==='教科書'?-1:a.localeCompare(b)),[]);
   const bks=useMemo(()=>[...new Set(QD.map(q=>q.bk))].sort(),[]);
   const tps=useMemo(()=>[...new Set(QD.map(q=>q.tp))].sort(),[]);
   const chs=useMemo(()=>[...new Set(QD.map(q=>q.ch).filter(c=>c>0))].sort((a,b)=>a-b),[]);
@@ -102,7 +102,7 @@ function App(){
     if(qi>=qs.length)return;
     const q=qs[qi];
     const id=QD.indexOf(q);
-    if(q.tp==='è¤é¸'){
+    if(q.tp==='複選'){
       const c=sel[id]||'';
       setSel(p=>({...p,[id]:c.includes(origLabel)?c.replace(origLabel,''):[...(c+origLabel)].sort().join('')}));
     }else{
@@ -116,7 +116,7 @@ function App(){
     const q=qs[qi];
     const id=QD.indexOf(q);
     const a=sel[id]||'';
-    if(!a){setFb({ok:false,msg:'è«åé¸æç­æ¡'});setShowFb(true);return;}
+    if(!a){setFb({ok:false,msg:'請先選擇答案'});setShowFb(true);return;}
     const ok=chk(q,a);
     setDone(p=>({...p,[id]:true}));
     if(!ok){setWrong(p=>({...p,[id]:true}));setStreak(p=>({...p,[id]:0}));}
@@ -130,8 +130,8 @@ function App(){
     const perm=getP(id,q);
     const ansD=mapAns(q,perm);
     const ns=ok?(streak[id]||0)+1:0;
-    const masteryMsg=ok?(ns>=2?'â­ å·²ææ¡ï¼':`é£å° ${ns}/2`):'é£å°æ­¸é¶';
-    setFb({ok,msg:ok?`â æ­£ç¢ºï¼(${masteryMsg})`:`â é¯èª¤ãæ­£ç¢ºç­æ¡ï¼${ansD} (${masteryMsg})`,ex:q.ex,sr:q.sr});
+    const masteryMsg=ok?(ns>=2?'⭐ 已掌握！':`連對 ${ns}/2`):'連對歸零';
+    setFb({ok,msg:ok?`✓ 正確！(${masteryMsg})`:`✗ 錯誤。正確答案：${ansD} (${masteryMsg})`,ex:q.ex,sr:q.sr});
     setShowFb(true);
   },[filt,qi,sel,chk,done,getP,mapAns,streak]);
 
@@ -177,7 +177,7 @@ function App(){
 
   const reset=()=>{setMode('menu');setQi(0);setShowFb(false);setSub(false);setShowNavPanel(false);setFDp(false);setFCf(false);setFWrong(false);setFFav(false);};
   const clearAll=()=>{
-    if(!confirm('ç¢ºå®æ¸é¤ææä½ç­ç´éåæ¶èï¼'))return;
+    if(!confirm('確定清除所有作答紀錄和收藏？'))return;
     setSel({});setDone({});setWrong({});setFav({});setSt({t:0,c:0});setStreak({});setMastered({});
     LS.set('sel',{});LS.set('done',{});LS.set('wrong',{});LS.set('fav',{});LS.set('st',{t:0,c:0});LS.set('streak',{});LS.set('mastered',{});
   };
@@ -213,26 +213,26 @@ function App(){
         <div className="max-w-4xl mx-auto space-y-2 sm:space-y-4">
           <div className="bg-white rounded-2xl shadow-lg p-3 sm:p-4 flex justify-between items-center flex-wrap gap-2">
             <div className="min-w-0 flex-1">
-              <h1 className={`text-base sm:text-xl font-bold text-${ac}-900`}>{isE?'èè©¦æ¨¡å¼':'ç·´ç¿æ¨¡å¼'}</h1>
+              <h1 className={`text-base sm:text-xl font-bold text-${ac}-900`}>{isE?'考試模式':'練習模式'}</h1>
               <div className="flex gap-1.5 text-[10px] sm:text-xs text-gray-400 mt-0.5 flex-wrap">
-                <span>ç¬¬ {qi+1}/{total} é¡</span>
-                <span>Â·</span>
+                <span>第 {qi+1}/{total} 題</span>
+                <span>·</span>
                 <span>{q.yr}</span>
-                <span>Â·</span>
+                <span>·</span>
                 <span>{q.bk}</span>
-                <span>Â·</span>
+                <span>·</span>
                 <span>{q.tp}</span>
-                {q.dp>=2&&<span className='ml-1 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>Ã{q.dp}</span>}
-                {q.cf===1&&<span className='ml-1 bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>â </span>}
-                {mastered[id]&&<span className='ml-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>å·²ææ¡</span>}
-                {!mastered[id]&&streak[id]>0&&<span className='ml-1 bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>é£å°{streak[id]}/2</span>}
+                {q.dp>=2&&<span className='ml-1 bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>×{q.dp}</span>}
+                {q.cf===1&&<span className='ml-1 bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>⚠</span>}
+                {mastered[id]&&<span className='ml-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>已掌握</span>}
+                {!mastered[id]&&streak[id]>0&&<span className='ml-1 bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full text-[10px] font-bold'>連對{streak[id]}/2</span>}
               </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               {isE&&<span className={`text-lg sm:text-2xl font-mono font-bold tabular-nums ${tl<300?'text-red-600 animate-pulse':'text-emerald-600'}`}>{fmt(tl)}</span>}
-              <button onClick={()=>setShowNavPanel(!showNavPanel)} className={`${isE?'bg-emerald-100 text-emerald-700':'bg-blue-100 text-blue-700'} px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium active:opacity-70 transition`}>é¡è</button>
-              <button onClick={()=>toggleFav(id)} className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-base sm:text-lg transition ${fav[id]?'bg-amber-100 text-amber-500':'bg-gray-100 text-gray-300'}`}>{fav[id]?'â':'â'}</button>
-              <button onClick={reset} className="bg-gray-100 text-gray-600 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium active:bg-gray-200 transition">è¿å</button>
+              <button onClick={()=>setShowNavPanel(!showNavPanel)} className={`${isE?'bg-emerald-100 text-emerald-700':'bg-blue-100 text-blue-700'} px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium active:opacity-70 transition`}>題號</button>
+              <button onClick={()=>toggleFav(id)} className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-base sm:text-lg transition ${fav[id]?'bg-amber-100 text-amber-500':'bg-gray-100 text-gray-300'}`}>{fav[id]?'★':'☆'}</button>
+              <button onClick={reset} className="bg-gray-100 text-gray-600 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium active:bg-gray-200 transition">返回</button>
             </div>
           </div>
 
@@ -265,7 +265,7 @@ function App(){
           <div className="bg-white rounded-2xl shadow-lg p-3 sm:p-6 md:p-8">
             <div className="mb-3 sm:mb-6">
               <p className="text-sm sm:text-lg font-semibold text-gray-800 leading-relaxed">{q.st}</p>
-              {q.ch>0&&<p className="text-[10px] sm:text-xs text-gray-400 mt-1 sm:mt-2">Ch {q.ch}{q.sr?' â '+q.sr:''}</p>}
+              {q.ch>0&&<p className="text-[10px] sm:text-xs text-gray-400 mt-1 sm:mt-2">Ch {q.ch}{q.sr?' — '+q.sr:''}</p>}
             </div>
 
             <div className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-6">
@@ -290,7 +290,7 @@ function App(){
             </div>
 
             {!isE&&!showFb&&(
-              <button onClick={submitAns} className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold active:bg-blue-700 transition text-base sm:text-lg" style={{touchAction:'manipulation'}}>æäº¤ç­æ¡</button>
+              <button onClick={submitAns} className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold active:bg-blue-700 transition text-base sm:text-lg" style={{touchAction:'manipulation'}}>提交答案</button>
             )}
 
             {showFb&&!isE&&(
@@ -301,11 +301,11 @@ function App(){
                   {fb.sr&&<p className="text-gray-400 text-[10px] sm:text-xs mt-2">{fb.sr}</p>}
                 </div>
                 <div className="flex gap-2 sm:gap-3">
-                  <button onClick={()=>go(-1)} disabled={qi===0} className="flex-1 bg-gray-100 text-gray-600 py-2.5 sm:py-3 rounded-xl font-semibold active:bg-gray-200 transition disabled:opacity-30 text-sm sm:text-base">â ä¸ä¸é¡</button>
+                  <button onClick={()=>go(-1)} disabled={qi===0} className="flex-1 bg-gray-100 text-gray-600 py-2.5 sm:py-3 rounded-xl font-semibold active:bg-gray-200 transition disabled:opacity-30 text-sm sm:text-base">← 上一題</button>
                   {qi<total-1?(
-                    <button onClick={()=>go(1)} className="flex-1 bg-blue-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-blue-600 transition text-sm sm:text-base">ä¸ä¸é¡ â</button>
+                    <button onClick={()=>go(1)} className="flex-1 bg-blue-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-blue-600 transition text-sm sm:text-base">下一題 →</button>
                   ):(
-                    <button onClick={reset} className="flex-1 bg-emerald-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-emerald-600 transition text-sm sm:text-base">å®æ â</button>
+                    <button onClick={reset} className="flex-1 bg-emerald-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-emerald-600 transition text-sm sm:text-base">完成 ✓</button>
                   )}
                 </div>
               </div>
@@ -313,9 +313,9 @@ function App(){
 
             {isE&&(
               <div className="flex gap-2 sm:gap-3">
-                <button onClick={()=>go(-1)} disabled={qi===0} className="flex-1 bg-gray-100 text-gray-600 py-2.5 sm:py-3 rounded-xl font-semibold active:bg-gray-200 transition disabled:opacity-30 text-sm sm:text-base">â ä¸ä¸é¡</button>
-                {qi<total-1&&(<button onClick={()=>go(1)} className="flex-1 bg-emerald-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-emerald-600 transition text-sm sm:text-base">ä¸ä¸é¡ â</button>)}
-                {qi===total-1&&(<button onClick={()=>setSub(true)} className="flex-1 bg-red-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-red-600 transition text-sm sm:text-base">äº¤å·</button>)}
+                <button onClick={()=>go(-1)} disabled={qi===0} className="flex-1 bg-gray-100 text-gray-600 py-2.5 sm:py-3 rounded-xl font-semibold active:bg-gray-200 transition disabled:opacity-30 text-sm sm:text-base">← 上一題</button>
+                {qi<total-1&&(<button onClick={()=>go(1)} className="flex-1 bg-emerald-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-emerald-600 transition text-sm sm:text-base">下一題 →</button>)}
+                {qi===total-1&&(<button onClick={()=>setSub(true)} className="flex-1 bg-red-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-red-600 transition text-sm sm:text-base">交卷</button>)}
               </div>
             )}
           </div>
@@ -330,26 +330,26 @@ function App(){
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="text-6xl mb-4">ð</div>
-            <h1 className="text-3xl font-extrabold text-emerald-800 mb-4">èè©¦å®æ</h1>
+            <div className="text-6xl mb-4">🏆</div>
+            <h1 className="text-3xl font-extrabold text-emerald-800 mb-4">考試完成</h1>
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-emerald-50 rounded-xl p-4">
-                <p className="text-gray-500 text-sm">æ­£ç¢ºç</p>
+                <p className="text-gray-500 text-sm">正確率</p>
                 <p className="text-3xl font-bold text-emerald-600">{eScore.p}%</p>
               </div>
               <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-gray-500 text-sm">ç¨æ</p>
+                <p className="text-gray-500 text-sm">用時</p>
                 <p className="text-3xl font-bold text-blue-600">{fmt(timeUsed)}</p>
               </div>
               <div className="bg-purple-50 rounded-xl p-4">
-                <p className="text-gray-500 text-sm">ç­å°</p>
+                <p className="text-gray-500 text-sm">答對</p>
                 <p className="text-3xl font-bold text-purple-600">{eScore.c}/{eScore.t}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">é¡ç®åé¡¨</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">題目回顨</h2>
             <div className="space-y-3">
               {eQs.map((q,idx)=>{
                 const qid=QD.indexOf(q);
@@ -361,28 +361,28 @@ function App(){
                 return(
                   <details key={idx} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition">
                     <summary className="bg-gray-50 p-4 cursor-pointer font-semibold text-gray-700 flex items-center gap-3">
-                      <span className="text-lg">{ok?'â':'â'}</span>
-                      <span>ç¬¬ {idx+1} é¡</span>
-                      {!answered&&<span className="text-gray-400">(æªä½ç­)</span>}
+                      <span className="text-lg">{ok?'✓':'✗'}</span>
+                      <span>第 {idx+1} 題</span>
+                      {!answered&&<span className="text-gray-400">(未作答)</span>}
                     </summary>
                     <div className="p-4 border-t border-gray-200 space-y-3">
                       <div>
-                        <p className="text-sm text-gray-500 mb-1">é¡å¹¹</p>
+                        <p className="text-sm text-gray-500 mb-1">題幹</p>
                         <p className="text-gray-700">{q.st}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 mb-2">ä½ çç­æ¡</p>
-                        <p className={`font-semibold ${ok?'text-emerald-600':'text-red-600'}`}>{a||'æªä½ç­'}</p>
+                        <p className="text-sm text-gray-500 mb-2">你的答案</p>
+                        <p className={`font-semibold ${ok?'text-emerald-600':'text-red-600'}`}>{a||'未作答'}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 mb-2">æ­£ç¢ºç­æ¡</p>
+                        <p className="text-sm text-gray-500 mb-2">正確答案</p>
                         <p className="font-semibold text-emerald-600">{ansD}</p>
                       </div>
                       {q.ex&&<div>
-                        <p className="text-sm text-gray-500 mb-1">è©³è§£</p>
+                        <p className="text-sm text-gray-500 mb-1">詳解</p>
                         <p className="text-gray-600 text-sm">{q.ex}</p>
                       </div>}
-                      {q.sr&&<p className="text-xs text-gray-400">ð {q.sr}</p>}
+                      {q.sr&&<p className="text-xs text-gray-400">📖 {q.sr}</p>}
                     </div>
                   </details>
                 );
@@ -390,7 +390,7 @@ function App(){
             </div>
           </div>
 
-          <button onClick={reset} className="w-full bg-emerald-500 text-white py-4 rounded-xl font-semibold hover:bg-emerald-600 transition text-lg">è¿åé¸å®</button>
+          <button onClick={reset} className="w-full bg-emerald-500 text-white py-4 rounded-xl font-semibold hover:bg-emerald-600 transition text-lg">返回選單</button>
         </div>
       </div>
     );
@@ -413,31 +413,31 @@ function App(){
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100 p-2 sm:p-4 md:p-8" style={{touchAction:'manipulation'}}>
       <div className="max-w-6xl mx-auto space-y-3 sm:space-y-6">
         <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 text-center">
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-900 mb-1 sm:mb-2">æ´å½¢å¤ç§é¡åº«ç·´ç¿</h1>
-          <p className="text-gray-500 text-xs sm:text-base mb-3 sm:mb-6">é£çºç­å° 2 æ¬¡å³ææ¡ â¢ ç­å°å¯æ¸é¤é¯é¡</p>
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-900 mb-1 sm:mb-2">整形外科題庫練習</h1>
+          <p className="text-gray-500 text-xs sm:text-base mb-3 sm:mb-6">連續答對 2 次即掌握 • 答對可清除錯題</p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-3 sm:mb-6">
             <svg viewBox="0 0 120 120" className="w-28 h-28 sm:w-40 sm:h-40 flex-shrink-0">
               <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" strokeWidth="8"/>
               <circle cx="60" cy="60" r="50" fill="none" stroke="#10b981" strokeWidth="8" strokeDasharray={`${masteryPct*3.14} 314`} strokeLinecap="round" transform="rotate(-90 60 60)"/>
               <text x="60" y="55" textAnchor="middle" fontSize="28" fontWeight="bold" fill="#10b981">{masteryPct}%</text>
-              <text x="60" y="75" textAnchor="middle" fontSize="12" fill="#6b7280">å·²ææ¡</text>
+              <text x="60" y="75" textAnchor="middle" fontSize="12" fill="#6b7280">已掌握</text>
             </svg>
             <div className="space-y-2 sm:space-y-3 text-left">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"/>
-                <span className="text-xs sm:text-sm text-gray-600">å·²ææ¡</span>
+                <span className="text-xs sm:text-sm text-gray-600">已掌握</span>
                 <span className="text-sm sm:text-base font-bold text-emerald-600 ml-auto tabular-nums">{masteredCount} / {QD.length}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"/>
-                <span className="text-xs sm:text-sm text-gray-600">å·²ä½ç­</span>
+                <span className="text-xs sm:text-sm text-gray-600">已作答</span>
                 <span className="text-sm sm:text-base font-bold text-blue-600 ml-auto tabular-nums">{answeredCount} / {QD.length}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-400 flex-shrink-0"/>
-                <span className="text-xs sm:text-sm text-gray-600">é¯é¡</span>
-                <span className="text-sm sm:text-base font-bold text-red-500 ml-auto tabular-nums">{wrongCount} é¡</span>
+                <span className="text-xs sm:text-sm text-gray-600">錯題</span>
+                <span className="text-sm sm:text-base font-bold text-red-500 ml-auto tabular-nums">{wrongCount} 題</span>
               </div>
             </div>
           </div>
@@ -445,63 +445,63 @@ function App(){
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <div onClick={()=>{setFY('all');setFB('all');setFT('all');setFCh('all');setFDp(true);setFCf(false);setFWrong(false);setFFav(false);setShuf(true);setTimeout(startPractice,0);}} className="bg-white rounded-xl shadow-lg p-3 sm:p-6 cursor-pointer active:shadow-md transition">
-            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">ð¥</div>
-            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">é«é »å¿å·</h3>
+            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">🔥</div>
+            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">高頻必刷</h3>
             <p className="text-xl sm:text-2xl font-bold text-orange-600">{highFreqQs.length}</p>
-            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">èâ¥3å¹´çé¡ç®</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">考≥3年的題目</p>
           </div>
 
           <div onClick={()=>{setFY('all');setFB('all');setFT('all');setFCh('all');setFDp(false);setFCf(true);setFWrong(false);setFFav(false);setTimeout(startPractice,0);}} className="bg-white rounded-xl shadow-lg p-3 sm:p-6 cursor-pointer active:shadow-md transition">
-            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">â ï¸</div>
-            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">ç­è­°/åæ­§</h3>
+            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">⚠️</div>
+            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">爭議/分歧</h3>
             <p className="text-xl sm:text-2xl font-bold text-red-600">{conflictQs.length}</p>
-            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">ç­æ¡çç¾</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">答案矛盾</p>
           </div>
 
           <div onClick={()=>{if(wrongCount===0)return;setFY('all');setFB('all');setFT('all');setFCh('all');setFDp(false);setFCf(false);setFWrong(true);setFFav(false);setTimeout(startPractice,0);}} className={`bg-white rounded-xl shadow-lg p-3 sm:p-6 transition ${wrongCount>0?'cursor-pointer active:shadow-md':'opacity-50 cursor-not-allowed'}`}>
-            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">â</div>
-            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">é¯é¡æ¬</h3>
+            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">❌</div>
+            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">錯題本</h3>
             <p className="text-xl sm:text-2xl font-bold text-rose-600">{wrongCount}</p>
-            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">æ¾ç¶ç­é¯çé¡ç®</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">曾經答錯的題目</p>
           </div>
 
           <div onClick={()=>{const fc=Object.keys(fav).length;if(fc===0)return;setFY('all');setFB('all');setFT('all');setFCh('all');setFDp(false);setFCf(false);setFWrong(false);setFFav(true);setTimeout(startPractice,0);}} className={`bg-white rounded-xl shadow-lg p-3 sm:p-6 transition ${Object.keys(fav).length>0?'cursor-pointer active:shadow-md':'opacity-50 cursor-not-allowed'}`}>
-            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">â­</div>
-            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">æ¶èé¡</h3>
+            <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">⭐</div>
+            <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-0.5 sm:mb-1">收藏題</h3>
             <p className="text-xl sm:text-2xl font-bold text-amber-600">{Object.keys(fav).length}</p>
-            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">æ¨è¨æ¶èçé¡ç®</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">標記收藏的題目</p>
           </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-6">ç·´ç¿æ¨¡å¼</h2>
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-6">練習模式</h2>
           <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">å¹´ä»½</label>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">年份</label>
                 <select value={fY} onChange={e=>setFY(e.target.value)} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-400 outline-none text-xs sm:text-sm">
-                  <option value="all">å¨é¨</option>
+                  <option value="all">全部</option>
                   {yrs.map(y=><option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">æç§æ¸</label>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">教科書</label>
                 <select value={fB} onChange={e=>setFB(e.target.value)} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-400 outline-none text-xs sm:text-sm">
-                  <option value="all">å¨é¨</option>
+                  <option value="all">全部</option>
                   {bks.map(b=><option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">é¡å</label>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">題型</label>
                 <select value={fT} onChange={e=>setFT(e.target.value)} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-400 outline-none text-xs sm:text-sm">
-                  <option value="all">å¨é¨</option>
+                  <option value="all">全部</option>
                   {tps.map(t=><option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">ç« ç¯</label>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2">章節</label>
                 <select value={fCh} onChange={e=>setFCh(e.target.value)} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-400 outline-none text-xs sm:text-sm">
-                  <option value="all">å¨é¨</option>
+                  <option value="all">全部</option>
                   {chs.map(c=><option key={c} value={c}>Ch {c}</option>)}
                 </select>
               </div>
@@ -510,45 +510,45 @@ function App(){
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <label className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gray-100 active:bg-gray-200 transition cursor-pointer">
                 <input type="checkbox" checked={shuf} onChange={e=>setShuf(e.target.checked)} className="w-4 h-4"/>
-                <span className="text-xs sm:text-sm font-semibold text-gray-600">é¨æ©æåº</span>
+                <span className="text-xs sm:text-sm font-semibold text-gray-600">隨機排序</span>
               </label>
               <label className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-gray-100 active:bg-gray-200 transition cursor-pointer">
                 <input type="checkbox" checked={optShuf} onChange={e=>setOptShuf(e.target.checked)} className="w-4 h-4"/>
-                <span className="text-xs sm:text-sm font-semibold text-gray-600">é¸é äºåº</span>
+                <span className="text-xs sm:text-sm font-semibold text-gray-600">選項亂序</span>
               </label>
             </div>
           </div>
 
           {filt.length>0?(
             <button onClick={startPractice} className="w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-xl font-semibold active:bg-blue-700 transition text-base sm:text-lg">
-              éå§ç·´ç¿ ({filt.length} é¡)
+              開始練習 ({filt.length} 題)
             </button>
           ):(
-            <p className="text-center text-gray-500 py-3 text-sm">ç¡ç¬¦åæ¢ä»¶çé¡ç®</p>
+            <p className="text-center text-gray-500 py-3 text-sm">無符合條件的題目</p>
           )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-6">èè©¦æ¨¡å¼</h2>
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-6">考試模式</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
             {[
-              {n:20,t:'30åé'},
-              {n:50,t:'60åé'},
-              {n:100,t:'90åé'},
-              {n:200,t:'120åé'},
+              {n:20,t:'30分鐘'},
+              {n:50,t:'60分鐘'},
+              {n:100,t:'90分鐘'},
+              {n:200,t:'120分鐘'},
             ].map(e=>(
               <button key={e.n} onClick={()=>{setENum(e.n);startExam(e.n);}} className="bg-emerald-50 active:bg-emerald-100 border border-emerald-200 rounded-xl p-3 sm:p-4 transition">
-                <p className="font-bold text-emerald-700 text-base sm:text-lg">{e.n} é¡</p>
+                <p className="font-bold text-emerald-700 text-base sm:text-lg">{e.n} 題</p>
                 <p className="text-[10px] sm:text-xs text-gray-500">{e.t}</p>
               </button>
             ))}
           </div>
-          {filt.length===0&&<p className="text-center text-gray-500 py-3 text-sm">ç¡ç¬¦åæ¢uä»¶çé¡ç®</p>}
+          {filt.length===0&&<p className="text-center text-gray-500 py-3 text-sm">無符合�u件的題目</p>}
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
           <button onClick={clearAll} className="w-full bg-red-50 text-red-600 py-2 rounded-xl font-semibold active:bg-red-100 transition text-xs sm:text-sm">
-            æ¸é¤ææç´é
+            清除所有紀錄
           </button>
         </div>
       </div>
